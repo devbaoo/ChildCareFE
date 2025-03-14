@@ -1,48 +1,65 @@
 import {
-    AlipayCircleOutlined,
     LockOutlined,
     UserOutlined,
-    TaobaoCircleOutlined,
-    WeiboCircleOutlined,
 } from '@ant-design/icons';
 import {
     LoginForm,
     ProConfigProvider,
     ProFormCheckbox,
     ProFormText,
-    setAlpha,
 } from '@ant-design/pro-components';
-import { Space, Tabs, theme } from 'antd';
-import type { CSSProperties } from 'react';
+import { Tabs, theme, message } from 'antd';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '@/services/store/store';
+import { loginAccount } from '@/services/features/authSlice';
 
 type LoginType = 'account';
 
 const LoginFormComponent = () => {
     const { token } = theme.useToken();
     const [loginType, setLoginType] = useState<LoginType>('account');
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
-    const iconStyles: CSSProperties = {
-        marginInlineStart: '8px', // Adjusted margin to fit within container
-        color: setAlpha(token.colorTextBase, 0.2),
-        fontSize: '24px',
-        verticalAlign: 'middle',
-        cursor: 'pointer',
+    const handleSubmit = async (values: { username: string; password: string }) => {
+        setLoading(true);
+        try {
+            // Chuẩn bị dữ liệu đúng format API yêu cầu
+            const loginData = {
+                email: values.username,
+                userpass: values.password
+            };
+
+            // Gọi API login
+            await dispatch(loginAccount(loginData)).unwrap();
+
+            // Hiển thị thông báo thành công
+            message.success('Login successful!');
+
+            // Điều hướng về trang chủ
+            navigate('/');
+        } catch (error) {
+            console.error('Login failed:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <ProConfigProvider hashed={false}>
             <div style={{ backgroundColor: token.colorBgContainer }}>
                 <LoginForm
-
-                    actions={
-                        <Space>
-                            Other login methods
-                            <AlipayCircleOutlined style={iconStyles} />
-                            <TaobaoCircleOutlined style={iconStyles} />
-                            <WeiboCircleOutlined style={iconStyles} />
-                        </Space>
-                    }
+                    onFinish={handleSubmit}
+                    submitter={{
+                        searchConfig: {
+                            submitText: 'Login',
+                        },
+                        submitButtonProps: {
+                            loading, // Button login có trạng thái loading
+                        }
+                    }}
                 >
                     <Tabs
                         centered
@@ -59,12 +76,16 @@ const LoginFormComponent = () => {
                                     size: 'large',
                                     prefix: <UserOutlined className={'prefixIcon'} />,
                                 }}
-                                placeholder={'Username: admin or user'}
+                                placeholder={'Email address'}
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Please enter your username!',
+                                        message: 'Please enter your email!',
                                     },
+                                    {
+                                        type: 'email',
+                                        message: 'Please enter a valid email!',
+                                    }
                                 ]}
                             />
                             <ProFormText.Password
@@ -72,39 +93,8 @@ const LoginFormComponent = () => {
                                 fieldProps={{
                                     size: 'large',
                                     prefix: <LockOutlined className={'prefixIcon'} />,
-                                    strengthText:
-                                        'Password should contain numbers, letters, and special characters, at least 8 characters long.',
-                                    statusRender: (value) => {
-                                        const getStatus = () => {
-                                            if (value && value.length > 12) {
-                                                return 'ok';
-                                            }
-                                            if (value && value.length > 6) {
-                                                return 'pass';
-                                            }
-                                            return 'poor';
-                                        };
-                                        const status = getStatus();
-                                        if (status === 'pass') {
-                                            return (
-                                                <div style={{ color: token.colorWarning }}>
-                                                    Strength: Medium
-                                                </div>
-                                            );
-                                        }
-                                        if (status === 'ok') {
-                                            return (
-                                                <div style={{ color: token.colorSuccess }}>
-                                                    Strength: Strong
-                                                </div>
-                                            );
-                                        }
-                                        return (
-                                            <div style={{ color: token.colorError }}>Strength: Weak</div>
-                                        );
-                                    },
                                 }}
-                                placeholder={'Password: ant.design'}
+                                placeholder={'Password'}
                                 rules={[
                                     {
                                         required: true,
