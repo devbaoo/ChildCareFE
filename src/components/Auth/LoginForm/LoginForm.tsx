@@ -8,7 +8,7 @@ import {
     ProFormCheckbox,
     ProFormText,
 } from '@ant-design/pro-components';
-import { Tabs, theme, message } from 'antd';
+import { Tabs, theme } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/services/store/store';
@@ -35,8 +35,7 @@ const LoginFormComponent = () => {
             // Gọi API login
             await dispatch(loginAccount(loginData)).unwrap();
 
-            // Hiển thị thông báo thành công
-            message.success('Login successful!');
+
 
             // Điều hướng về trang chủ
             navigate('/');
