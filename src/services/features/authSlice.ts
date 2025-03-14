@@ -29,7 +29,6 @@ export const loginAccount = createAsyncThunk<IAccount, IAccountRequest>(
       return response.data;
     } catch (error) {
       toast.error("Login failed");
-      console.log(error);
       return thunkAPI.rejectWithValue(error);
     }
   }
